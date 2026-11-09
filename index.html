@@ -47,7 +47,7 @@
       left: 20px;
       right: 20px;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
       pointer-events: none;
       z-index: 10;
@@ -55,15 +55,7 @@
     .hud-header * { pointer-events: auto; }
 
     .hud-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border);
-      padding: 10px 18px;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      display: none !important;
     }
     .brand-icon {
       width: 34px;
@@ -101,8 +93,8 @@
       transition: all 0.2s ease;
     }
     .search-box input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 12px var(--accent-glow);
+      border-color: #FF007F;
+      box-shadow: 0 0 14px rgba(255, 0, 127, 0.45);
     }
     .search-icon {
       position: absolute;
@@ -285,14 +277,6 @@
   <div id="stage">
     <!-- Header Controls -->
     <header class="hud-header">
-      <div class="hud-brand">
-        <div class="brand-icon">📑</div>
-        <div>
-          <div class="brand-title">BẢN ĐỒ TRI THỨC VĂN BẢN (PDF)</div>
-          <div class="brand-subtitle">180 Văn Bản Nghiệp Vụ · Không Gian Tương Tác 3D</div>
-        </div>
-      </div>
-
       <div class="hud-actions">
         <div class="search-box">
           <span class="search-icon">🔍</span>
@@ -428,7 +412,7 @@
     // 3. VÒNG LẶP RENDER 60 FPS
     function renderFrame() {
       if (autoRotate && !isDragging) {
-        rotY += 0.0022;
+        rotY += 0.0009;
       }
 
       ctx.save();
@@ -465,7 +449,20 @@
         const isHighlight = (hoveredNode && (hoveredNode.id === s.id || hoveredNode.id === t.id)) ||
                             (selectedNode && (selectedNode.id === s.id || selectedNode.id === t.id));
 
-        if (e.type === 'relation') {
+        const isSearchConnected = searchQuery && (
+          (s.label.toLowerCase().includes(searchQuery)) ||
+          (t.label.toLowerCase().includes(searchQuery))
+        );
+
+        if (searchQuery && !isSearchConnected && !isHighlight) {
+          // Làm mờ tối đa các đường không liên quan khi đang tìm kiếm
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.03)';
+          ctx.lineWidth = 0.4;
+        } else if (isSearchConnected) {
+          // Đường nối đến kết quả tìm kiếm sáng rực màu hồng neon
+          ctx.strokeStyle = '#FF007F';
+          ctx.lineWidth = 2.0;
+        } else if (e.type === 'relation') {
           if (isHighlight) {
             ctx.strokeStyle = '#F59E0B';
             ctx.lineWidth = 2.0;
@@ -499,9 +496,29 @@
         const isHover = hoveredNode && hoveredNode.id === n.id;
         const isSelect = selectedNode && selectedNode.id === n.id;
         const isMatchSearch = searchQuery && n.label.toLowerCase().includes(searchQuery);
+        const isDimmed = searchQuery && !isMatchSearch && n.type !== 'hub' && n.type !== 'cluster';
 
         // Vầng sáng Aura
-        if (n.type === 'hub' || n.type === 'cluster' || isHover || isSelect || isMatchSearch) {
+        if (isMatchSearch) {
+          // Vầng hào quang Hồng Neon Huỳnh Quang cực mạnh (Neon Magenta Glow)
+          const glowR = n.pr * 5.2;
+          const glow = ctx.createRadialGradient(n.px, n.py, n.pr * 0.2, n.px, n.py, glowR);
+          glow.addColorStop(0, '#FF007F');
+          glow.addColorStop(0.35, 'rgba(255, 0, 127, 0.65)');
+          glow.addColorStop(0.7, 'rgba(255, 0, 127, 0.18)');
+          glow.addColorStop(1, 'transparent');
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(n.px, n.py, glowR, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Vòng ngắm tròn Neon bên ngoài (Target Ring)
+          ctx.strokeStyle = '#FF007F';
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.arc(n.px, n.py, n.pr * 2.2, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (!isDimmed && (n.type === 'hub' || n.type === 'cluster' || isHover || isSelect)) {
           const glowR = n.pr * (isHover || isSelect ? 3.8 : 2.4);
           const glow = ctx.createRadialGradient(n.px, n.py, n.pr * 0.2, n.px, n.py, glowR);
           glow.addColorStop(0, n.color || '#F59E0B');
@@ -513,28 +530,45 @@
         }
 
         // Điểm tròn Node
-        ctx.fillStyle = (isHover || isSelect) ? '#FFF' : (isMatchSearch ? '#F59E0B' : n.color);
-        ctx.beginPath();
-        ctx.arc(n.px, n.py, isMatchSearch ? n.pr * 1.5 : n.pr, 0, Math.PI * 2);
-        ctx.fill();
+        if (isMatchSearch) {
+          // Lõi trắng siêu sáng viền hồng neon dày
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(n.px, n.py, n.pr * 1.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#FF007F';
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else if (isDimmed) {
+          // Làm mờ tối đa các node không khớp
+          ctx.fillStyle = 'rgba(100, 116, 139, 0.12)';
+          ctx.beginPath();
+          ctx.arc(n.px, n.py, n.pr * 0.75, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = (isHover || isSelect) ? '#FFF' : n.color;
+          ctx.beginPath();
+          ctx.arc(n.px, n.py, n.pr, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
         // Nhãn tên file có hiệu ứng chiều sâu Z
-        const showLabel = showAllLabels || n.type === 'hub' || n.type === 'cluster' || isHover || isSelect || isMatchSearch;
+        const showLabel = isMatchSearch || (!searchQuery && (showAllLabels || n.type === 'hub' || n.type === 'cluster' || isHover || isSelect));
         if (showLabel) {
           const isSpecial = n.type === 'hub' || n.type === 'cluster';
           const depthFactor = Math.max(0.25, Math.min(1.0, (n.pz + 380) / 760));
-          const fontSize = Math.max(9, Math.min(15, Math.round((n.type === 'hub' ? 14 : (n.type === 'cluster' ? 12 : 10)) * n.pscale)));
+          const fontSize = Math.max(10, Math.min(16, Math.round((isMatchSearch ? 13 : (n.type === 'hub' ? 14 : (n.type === 'cluster' ? 12 : 10))) * n.pscale)));
           
           ctx.save();
-          ctx.font = `${(isHover || isSelect || isSpecial) ? 'bold ' : ''}${fontSize}px 'Plus Jakarta Sans', sans-serif`;
+          ctx.font = `${(isHover || isSelect || isSpecial || isMatchSearch) ? 'bold ' : ''}${fontSize}px 'Plus Jakarta Sans', sans-serif`;
           ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-          ctx.shadowBlur = 5;
+          ctx.shadowBlur = isMatchSearch ? 8 : 5;
           ctx.textAlign = 'center';
 
-          if (isHover || isSelect) {
+          if (isMatchSearch) {
+            ctx.fillStyle = '#FF007F'; // Màu Hồng Neon Huỳnh Quang nổi bật 100%
+          } else if (isHover || isSelect) {
             ctx.fillStyle = '#60A5FA';
-          } else if (isMatchSearch) {
-            ctx.fillStyle = '#F59E0B';
           } else if (n.type === 'hub') {
             ctx.fillStyle = '#FFF';
           } else if (n.type === 'cluster') {
@@ -552,7 +586,7 @@
               txt = txt.slice(0, 36) + '..';
             }
           }
-          ctx.fillText(txt, n.px, n.py + n.pr + 12);
+          ctx.fillText(txt, n.px, n.py + n.pr + (isMatchSearch ? 16 : 12));
           ctx.restore();
         }
       }
@@ -577,8 +611,8 @@
       if (isDragging) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
-        rotY += dx * 0.005;
-        rotX += dy * 0.005;
+        rotY += dx * 0.0035;
+        rotX += dy * 0.0035;
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
         return;
@@ -614,14 +648,38 @@
       dPath.textContent = node.relPath || 'Gốc';
       dDesc.textContent = node.desc || '';
 
-      if (node.fileUri) {
-        dOpenPdfBtn.href = node.fileUri;
+      if (node.relPath) {
+        const isOnline = location.protocol.startsWith('http');
+        if (isOnline) {
+          dOpenPdfBtn.href = 'javascript:void(0)';
+          dOpenPdfBtn.target = '_self';
+          dOpenPdfBtn.onclick = (e) => {
+            e.preventDefault();
+            navigator.clipboard.writeText(node.fileName || node.label);
+            clearSearchState();
+            alert('⚠️ LƯU Ý BẢO MẬT TRÌNH DUYỆT:\n\nBạn đang xem Bản đồ trên Web trực tuyến (Internet). Trình duyệt chặn các trang web trên mạng tự ý mở ổ cứng máy tính cá nhân để bảo vệ dữ liệu của bạn.\n\n✅ Đã tự động sao chép tên tệp: "' + (node.fileName || node.label) + '" vào khay nhớ tạm!\nBạn chỉ cần dán vào ô tìm kiếm máy tính để mở, hoặc mở trực tiếp tệp "Ban_Do_Tri_Thuc_Van_Ban_PDF.html" trên máy tính để đọc PDF tức thì.');
+          };
+        } else {
+          // Môi trường nội bộ trên máy tính (file:///): Dùng đường dẫn tương đối để Chrome/Edge mở trực tiếp trong tab mới
+          dOpenPdfBtn.href = encodeURI(node.relPath);
+          dOpenPdfBtn.target = '_blank';
+          dOpenPdfBtn.onclick = () => {
+            clearSearchState();
+          };
+        }
         dOpenPdfBtn.style.display = 'flex';
       } else {
         dOpenPdfBtn.style.display = 'none';
       }
 
       drawer.classList.add('open');
+    }
+
+    function clearSearchState() {
+      if (searchQuery) {
+        searchQuery = '';
+        if (searchInput) searchInput.value = '';
+      }
     }
 
     dCloseBtn.onclick = () => {
@@ -633,6 +691,7 @@
       if (selectedNode) {
         const copyTxt = selectedNode.fullPath || selectedNode.label;
         navigator.clipboard.writeText(copyTxt);
+        clearSearchState();
         dCopyPathBtn.innerHTML = '<span>✅ Đã sao chép!</span>';
         setTimeout(() => {
           dCopyPathBtn.innerHTML = '<span>📋 Sao Chép Tên & Đường Dẫn</span>';
