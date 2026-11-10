@@ -385,6 +385,7 @@ def generate_html(graph_data, output_path):
       width: 100%;
       height: 100%;
       cursor: grab;
+      touch-action: none;
     }}
     canvas:active {{ cursor: grabbing; }}
 
@@ -742,16 +743,122 @@ def generate_html(graph_data, output_path):
     .toast-title {{ font-size: 13px; font-weight: 700; color: var(--text-blue); margin-bottom: 4px; }}
     .toast-desc {{ font-size: 12px; color: var(--text); line-height: 1.5; }}
 
-    /* Responsive cho màn hình vừa và nhỏ */
+    .instr-mobile {{ display: none; }}
+
+    /* Responsive cho màn hình vừa (Máy tính bảng) */
     @media (max-width: 960px) {{
       .hud-header {{ top: 12px; left: 12px; right: 12px; }}
-      .search-box {{ width: 210px; }}
+      .search-box {{ width: 200px; }}
       .hud-btn {{ padding: 7px 11px; font-size: 12px; }}
       .hud-bottom-bar {{ bottom: 12px; left: 12px; right: 12px; flex-direction: column; align-items: stretch; gap: 8px; }}
       .bottom-left-group {{ justify-content: space-between; }}
       .legend-capsule {{ max-width: 100%; }}
       .hud-instructions {{ align-self: center; font-size: 11px; }}
       .detail-drawer {{ width: min(400px, 92vw); }}
+    }}
+
+    /* Tối ưu hóa chuyên sâu cho Điện thoại di động (Smartphones <= 640px) */
+    @media (max-width: 640px) {{
+      .hud-header {{
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        justify-content: flex-start;
+      }}
+      .hud-actions {{
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 3px;
+        gap: 6px;
+      }}
+      .hud-actions::-webkit-scrollbar {{ display: none; }}
+      .search-box {{
+        min-width: 165px;
+        width: 165px;
+        flex-shrink: 0;
+      }}
+      .search-box input {{
+        font-size: 12px;
+        padding: 7px 10px 7px 28px;
+      }}
+      .search-icon {{ left: 8px; font-size: 12px; }}
+      .hud-btn {{
+        padding: 6px 10px;
+        font-size: 11.5px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }}
+      .hud-bottom-bar {{
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }}
+      .bottom-left-group {{
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }}
+      .hud-stats-pill {{
+        align-self: flex-start;
+        padding: 4px 10px;
+        font-size: 11px;
+      }}
+      .legend-capsule {{
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        padding: 5px 10px;
+        border-radius: 12px;
+        gap: 12px;
+      }}
+      .legend-capsule::-webkit-scrollbar {{ display: none; }}
+      .legend-item {{
+        flex-shrink: 0;
+        font-size: 11.5px;
+      }}
+      .instr-desktop {{ display: none; }}
+      .instr-mobile {{
+        display: inline;
+        font-size: 10.5px;
+        text-align: center;
+        opacity: 0.85;
+      }}
+      .detail-drawer {{
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100vw;
+        max-height: 82vh;
+        border-radius: 20px 20px 0 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        border-top: 1px solid var(--drawer-border);
+        transform: translateY(105%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        padding: 20px 16px;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+      }}
+      .detail-drawer.open {{
+        right: 0;
+        transform: translateY(0);
+      }}
+      .drawer-title {{ font-size: 15px; }}
+      .action-btn {{
+        padding: 12px 16px;
+        font-size: 14px;
+        border-radius: 10px;
+      }}
     }}
   </style>
 </head>
@@ -847,7 +954,8 @@ def generate_html(graph_data, output_path):
       </div>
 
       <div class="hud-instructions">
-        <span>Kéo để xoay · Lăn để phóng · Bấm đúp để về góc nhìn đầu</span>
+        <span class="instr-desktop">Kéo để xoay · Lăn để phóng · Bấm đúp để về góc nhìn đầu</span>
+        <span class="instr-mobile">Vuốt 1 ngón để xoay · Chụm 2 ngón để phóng · Chạm để xem tệp</span>
       </div>
     </footer>
 
@@ -1352,6 +1460,85 @@ def generate_html(graph_data, output_path):
     canvas.addEventListener('click', () => {{
       if (hoveredNode) {{
         showNodeDetails(hoveredNode);
+      }}
+    }});
+
+    // 4.1. SỰ KIỆN CẢM ỨNG CHO ĐIỆN THOẠI & MÁY TÍNH BẢNG (TOUCH GESTURES)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let initialPinchDist = null;
+    let initialZoom = 1.0;
+
+    canvas.addEventListener('touchstart', e => {{
+      if (e.touches.length === 1) {{
+        isDragging = true;
+        lastMouseX = e.touches[0].clientX;
+        lastMouseY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+      }} else if (e.touches.length === 2) {{
+        isDragging = false;
+        initialPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialZoom = zoom;
+      }}
+    }}, {{ passive: false }});
+
+    canvas.addEventListener('touchmove', e => {{
+      e.preventDefault();
+      if (e.touches.length === 1 && isDragging) {{
+        const dx = e.touches[0].clientX - lastMouseX;
+        const dy = e.touches[0].clientY - lastMouseY;
+        rotY += dx * 0.0045;
+        rotX += dy * 0.0045;
+        lastMouseX = e.touches[0].clientX;
+        lastMouseY = e.touches[0].clientY;
+      }} else if (e.touches.length === 2 && initialPinchDist) {{
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = currentDist / initialPinchDist;
+        zoom = Math.min(Math.max(0.4, initialZoom * factor), 2.5);
+      }}
+    }}, {{ passive: false }});
+
+    canvas.addEventListener('touchend', e => {{
+      isDragging = false;
+      initialPinchDist = null;
+
+      // Xử lý chạm nhanh (Tap) vào nút văn bản
+      if (e.changedTouches.length === 1) {{
+        const touch = e.changedTouches[0];
+        const elapsed = Date.now() - touchStartTime;
+        const dist = Math.hypot(touch.clientX - touchStartX, touch.clientY - touchStartY);
+        if (elapsed < 350 && dist < 15) {{
+          const rect = canvas.getBoundingClientRect();
+          const tx = touch.clientX - rect.left;
+          const ty = touch.clientY - rect.top;
+
+          const tappedNode = graphData.nodes.find(n => {{
+            if (Math.hypot(tx - n.px, ty - n.py) <= n.pr + 12) return true;
+            if (n.badgeBounds) {{
+              const b = n.badgeBounds;
+              if (tx >= b.x - 4 && tx <= b.x + b.w + 4 && ty >= b.y - 4 && ty <= b.y + b.h + 4) return true;
+            }}
+            return false;
+          }});
+
+          if (tappedNode) {{
+            showNodeDetails(tappedNode);
+          }} else {{
+            if (drawer.classList.contains('open')) {{
+              drawer.classList.remove('open');
+              selectedNode = null;
+            }}
+          }}
+        }}
       }}
     }});
 
