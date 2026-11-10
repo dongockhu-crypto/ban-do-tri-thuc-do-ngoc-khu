@@ -1,0 +1,8 @@
+*.tmp
+*.temp
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+test_*.js
+*.log
