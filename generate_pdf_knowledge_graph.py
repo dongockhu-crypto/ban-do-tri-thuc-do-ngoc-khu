@@ -936,20 +936,6 @@ def generate_html(graph_data, output_path):
         );
       }}
 
-      // 3. Hiển thị thông báo Toast với hướng dẫn trực quan
-      const isOnline = location.protocol.startsWith('http');
-      if (isOnline) {{
-        showToast(
-          '🚀 Đã Mở Tab Mới & Tự Động Sao Chép Đường Dẫn!',
-          `Đã mở <b>${{node.fileName || node.label}}</b> và copy đường dẫn vào bộ nhớ tạm.<br><span style="color:#2563EB;font-weight:600;">💡 Mẹo trên GitHub:</span> Nếu tab mới chưa nạp được PDF từ ổ đĩa máy tính, bạn chỉ cần bấm <b>Ctrl + V</b> rồi Enter tại thanh địa chỉ tab đó!`
-        );
-      }} else {{
-        showToast(
-          '📖 Đang Mở Tệp PDF!',
-          `Đã mở <b>${{node.fileName || node.label}}</b> trong tab mới và tự động sao chép đường dẫn vào Clipboard.`
-        );
-      }}
-
       clearSearchState();
     }}
     const dCloseBtn = document.getElementById('dCloseBtn');
