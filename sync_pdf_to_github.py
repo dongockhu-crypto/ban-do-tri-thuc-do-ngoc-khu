@@ -26,7 +26,8 @@ def main():
     
     # 2. Kiểm tra trạng thái thay đổi Git
     print("\n[Bước 2/3] Kiểm tra các tệp PDF mới hoặc tệp cập nhật...")
-    run_cmd('git add .gitignore generate_pdf_knowledge_graph.py index.html HUONG_DAN_SU_DUNG_BAN_DO_TRI_THUC.md Mo_Ban_Do_Tri_Thuc_PDF.bat')
+    run_cmd('git add .gitignore .nojekyll generate_pdf_knowledge_graph.py index.html HUONG_DAN_SU_DUNG_BAN_DO_TRI_THUC.md Mo_Ban_Do_Tri_Thuc_PDF.bat')
+    run_cmd('git add .github/workflows/deploy.yml')
     run_cmd('git add "*.pdf" "*.PDF"')
     run_cmd('git add "Các văn bản đã hết hiệu lực/*.pdf"')
     
@@ -54,3 +55,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
