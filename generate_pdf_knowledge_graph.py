@@ -802,11 +802,11 @@ def generate_html(graph_data, output_path):
       <p class="drawer-desc" id="dDesc">Trích yếu nội dung văn bản...</p>
 
       <div class="drawer-actions">
-        <button class="action-btn action-btn-primary" id="dSmartOpenBtn" title="Tự động mở tab mới và sao chép đường dẫn để truy cập tức thì">
-          <span>🚀 Mở Tệp PDF & Sao Chép Đường Dẫn</span>
+        <button class="action-btn action-btn-primary" id="dSmartOpenBtn" title="Mở trực tiếp toàn văn tệp PDF trên trình duyệt">
+          <span>📖 Mở Toàn Văn Tệp PDF</span>
         </button>
         <div class="action-hint" id="dActionHint">
-          <span>💡 <b>Cơ chế thông minh:</b> Tự động mở tab mới và copy đường dẫn <code>file:///</code> vào bộ nhớ tạm. Trên GitHub, nếu tab mới chưa tải được PDF từ ổ đĩa máy tính, bạn chỉ cần bấm <b>Ctrl + V</b> rồi Enter tại thanh địa chỉ tab đó.</span>
+          <span>💡 <b>Hỗ trợ đa nền tảng:</b> Bấm nút trên hoặc nhấp đúp vào văn bản để xem trực tiếp file PDF mượt mà trên cả máy tính và điện thoại di động.</span>
         </div>
       </div>
     </aside>
