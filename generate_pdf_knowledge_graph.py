@@ -270,7 +270,7 @@ def generate_html(graph_data, output_path):
   <meta property="og:type" content="website" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {{
       /* Mặc định: GIAO DIỆN SÁNG (Nền trắng ngọc, chữ xanh Navy nổi bật) */
@@ -368,7 +368,7 @@ def generate_html(graph_data, output_path):
       background: var(--bg);
       background-image: var(--bg-gradient);
       color: var(--text);
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
       height: 100vh;
       width: 100vw;
@@ -873,7 +873,7 @@ def generate_html(graph_data, output_path):
           <input type="text" id="searchInput" placeholder="Tìm số hiệu (225, 354, 399...), từ khóa..." autocomplete="off" />
         </div>
         <button class="hud-btn" id="btnToggleTheme" title="Chuyển đổi giao diện Nền Sáng / Nền Tối">
-          <span>☀️</span> Giao Diện Sáng
+          <span>☀️</span> Nền Sáng
         </button>
         <button class="hud-btn active" id="btnToggleLabels" title="Bật/Tắt hiển thị tên file trên toàn bộ các nút">
           <span>🏷️</span> Ẩn/Hiện tên file
@@ -1346,7 +1346,7 @@ def generate_html(graph_data, output_path):
           const fontSize = Math.max(10, Math.min(15, Math.round((isMatchSearch ? 13 : (n.type === 'hub' ? 14 : (n.type === 'cluster' ? 12 : 11))) * n.pscale)));
           
           ctx.save();
-          ctx.font = `${{(isHover || isSelect || isSpecial || isMatchSearch) ? '700 ' : '600 '}}${{fontSize}}px 'Plus Jakarta Sans', sans-serif`;
+          ctx.font = `${{(isHover || isSelect || isSpecial || isMatchSearch) ? '700 ' : '600 '}}${{fontSize}}px 'Be Vietnam Pro', sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
 
